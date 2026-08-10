@@ -5,6 +5,7 @@ import Review from "./components/review";
 const App = () => {
   const [image, setImage] = useState(null);
   const [review , setReview] = useState(false)
+  const [extractedData, setExtractedData] = useState(null);
   const inputRef = useRef(null);
   const fileRef = useRef(null)
 
@@ -27,6 +28,10 @@ const App = () => {
       method: "POST",
       body:formData
     })
+
+     const extractedData = await result.json();
+       setExtractedData(extractedData);
+    console.log(extractedData); // confirm the shape before wiring further
 
     setReview(true)
   };
@@ -86,7 +91,7 @@ const App = () => {
       <button onClick={handleGeneration}>Digitize</button>
 
 
-      {review &&(<Review />)}
+      {review &&(<Review data={extractedData} />)}
     </div>
   );
 };

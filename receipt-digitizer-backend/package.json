@@ -12,11 +12,22 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.2",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.9.1"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.9.1": true,
+    "better-sqlite3@13.0.2": true,
+    "prisma@7.9.1": true,
+    "better-sqlite3@12.11.1": true
   }
 }

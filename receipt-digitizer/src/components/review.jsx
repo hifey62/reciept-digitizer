@@ -1,11 +1,59 @@
 import { Store, StickyNote, Calendar, ChevronDown, ShieldCheck, Pencil, X } from "lucide-react";
+import { useState } from "react";
 
-const Review = () => {
+const Review = ({ data, image ,setTake, setReview}) => {
+  // Local editable copies — so the user can correct AI mistakes before saving
+  const [vendor, setVendor] = useState(data.vendor);
+  const [amount, setAmount] = useState(data.amount);
+  const [date, setDate] = useState(data.date);
+  const [category, setCategory] = useState(data.category);
+  const [items, setItems] = useState(data.items);
+  const [notes, setNotes] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const removeItem = (index) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  function handleRender(){
+    setTake(true)
+    setReview(false)
+  }
+
+ const handleConfirm = async () => {
+  const payload = {
+    vendor,
+    amount: Number(amount), // the input is text, but the backend expects a number
+    date,
+    category,
+    items,
+    notes,
+  };
+
+  try {
+    const result = await fetch(`http://localhost:5003/receipts/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!result.ok) {
+      throw new Error("Save failed");
+    }
+
+    const data = await result.json();
+    console.log("Saved:", data);
+    setSuccess(true);
+    // next: navigate back to upload screen, or show a success state
+  } catch (err) {
+    console.error(err);
+    // next: show an error message to the user
+  }
+};
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <button className="text-gray-500">
+        <button className="text-gray-500" onClick={ handleRender}>
           <i className="fa-solid fa-arrow-left" />
         </button>
         <div className="text-center">
@@ -20,38 +68,37 @@ const Review = () => {
         Please review the details extracted by AI and make any corrections.
       </p>
 
-      {/* Receipt image card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-gray-700">Receipt Image</span>
-          <button className="text-xs text-green-600 font-medium">View Fullscreen</button>
         </div>
-
-        <img
-          src="https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?auto=format&fit=crop&w=1200&q=80"
-          alt="Receipt"
-          className="w-full rounded-xl object-cover"
-        />
-
-       
+        <img src={image} alt="Receipt" className="w-full rounded-xl object-cover" />
+        <div className="flex items-center gap-1 text-green-600 font-medium text-xs mt-3">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          Extracted by AI
+        </div>
       </div>
 
-      {/* Extracted details card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 space-y-4">
         <h3 className="text-sm font-semibold text-gray-700">Extracted Details</h3>
 
-        <Field icon={<Store className="w-4 h-4" />} label="Vendor / Merchant" defaultValue="Green Mart" />
-        <Field icon={<i className="fa-solid fa-naira-sign text-sm" />} label="Amount" defaultValue="17,450.00" />
-        <Field icon={<Calendar className="w-4 h-4" />} label="Date" defaultValue="27/06/2026" />
+        <Field icon={<Store className="w-4 h-4" />} label="Vendor / Merchant" value={vendor} onChange={setVendor} />
+        <Field icon={<i className="fa-solid fa-naira-sign text-sm" />} label="Amount" value={amount} onChange={setAmount} />
+        <Field icon={<Calendar className="w-4 h-4" />} label="Date" value={date} onChange={setDate} />
 
         <div>
           <label className="text-xs font-medium text-gray-500 mb-1 block">Category</label>
           <div className="relative">
-            <select className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100">
-              <option>Groceries</option>
-              <option>Utilities</option>
-              <option>Transport</option>
-              <option>Supplies</option>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full appearance-none rounded-lg border border-gray-200 bg-white py-2.5 pl-3 pr-9 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
+            >
+              <option value="Groceries">Groceries</option>
+              <option value="Repair">Repair</option>
+              <option value="Utilities">Utilities</option>
+              <option value="Transport">Transport</option>
+              <option value="Supplies">Supplies</option>
             </select>
             <ChevronDown className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -63,31 +110,25 @@ const Review = () => {
           </label>
           <input
             type="text"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
             placeholder="Add a note..."
             className="w-full rounded-lg border border-gray-200 py-2.5 px-3 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
           />
         </div>
       </div>
 
-      {/* Itemized list card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-6">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Items</h3>
-
         <div className="space-y-2">
-          <ItemRow name="Rice 10kg" price="4,180.00" />
-          <ItemRow name="Veg Oil 5L" price="4,200.00" />
-          <ItemRow name="Tomatoes 5kg" price="1,200.00" />
-          <ItemRow name="Milk 400g" price="950.00" />
+          {items.map((item, i) => (
+            <ItemRow key={i} name={item.name} price={item.price} onRemove={() => removeItem(i)} />
+          ))}
         </div>
-
-        <button className="mt-3 text-sm text-green-600 font-medium flex items-center gap-1">
-          + Add item
-        </button>
       </div>
 
-      {/* Actions */}
       <div className="space-y-3">
-        <button className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+        <button className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2" onClick={handleConfirm}>
           <ShieldCheck className="w-4 h-4" />
           Confirm & Save Expense
         </button>
@@ -95,20 +136,26 @@ const Review = () => {
           Cancel
         </button>
       </div>
+      
+      {success && (
+        <div className="success-message text-green-600 text-sm font-medium mt-4">
+          <ShieldCheck className="w-4 h-4 inline-block mr-1" />
+          Receipt saved successfully!
+        </div>
+      )}
     </div>
   );
 };
 
-const Field = ({ icon, label, defaultValue }) => (
+const Field = ({ icon, label, value, onChange }) => (
   <div>
     <label className="text-xs font-medium text-gray-500 mb-1 block">{label}</label>
     <div className="relative">
-      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">
-        {icon}
-      </span>
+      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-gray-400">{icon}</span>
       <input
         type="text"
-        defaultValue={defaultValue}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-gray-200 py-2.5 pl-9 pr-9 text-sm outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
       />
       <Pencil className="w-3.5 h-3.5 text-gray-300 absolute right-3 top-1/2 -translate-y-1/2" />
@@ -116,12 +163,12 @@ const Field = ({ icon, label, defaultValue }) => (
   </div>
 );
 
-const ItemRow = ({ name, price }) => (
+const ItemRow = ({ name, price, onRemove }) => (
   <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
     <span className="text-sm text-gray-700">{name}</span>
     <div className="flex items-center gap-3">
       <span className="text-sm font-medium text-gray-800">₦{price}</span>
-      <button className="text-gray-300 hover:text-red-500">
+      <button onClick={onRemove} className="text-gray-300 hover:text-red-500">
         <X className="w-3.5 h-3.5" />
       </button>
     </div>

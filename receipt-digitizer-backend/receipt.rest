@@ -1,0 +1,31 @@
+### post receipt to google spreadsheet
+
+POST https://script.google.com/macros/s/AKfycbwJnirR0ydxGLdLOISYHIl9vkO-VbBnTwQxiEsOCTOF2whQZJHchzsB9gwhjd0RgX9Q/exec
+Content-Type: application/json
+
+{
+  "vendor": "Test Vendor",
+  "amount": 154.06,
+  "date": "2026-08-17",
+  "category": "Repair",
+  "items": [
+    { "name": "Test Item", "price": 100 }
+  ],
+  "notes": "Just testing the sheet connection"
+}
+
+### full flow
+
+POST http://localhost:5003/receipts/confirm
+Content-Type: application/json
+
+{
+  "vendor": "Test Vendor",
+  "amount": 154.06,
+  "date": "2026-08-17",
+  "category": "Repair",
+  "items": [
+    { "name": "Test Item", "price": 100 }
+  ],
+  "notes": "route test"
+}

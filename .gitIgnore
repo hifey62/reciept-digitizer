@@ -1,0 +1,18 @@
+# Root .gitignore, in C:\Users\HP\reciept-digitizer\
+
+# Dependencies (both frontend and backend)
+node_modules/
+
+# Environment variables (both)
+.env
+
+# Build output
+dist/
+build/
+
+# Backend-specific
+receipt-digitizer-backend/uploads/
+receipt-digitizer-backend/prisma/dev.db
+
+# OS/editor noise
+.DS_Store

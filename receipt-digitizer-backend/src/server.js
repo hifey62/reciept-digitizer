@@ -4,6 +4,7 @@ import multer from 'multer'
 import receiptRoutes from './routes/receipt.js'
 const app = express();
 app.use(cors());
+app.use(express.json());
 
 const PORT = process.env.PORT || 5003
 

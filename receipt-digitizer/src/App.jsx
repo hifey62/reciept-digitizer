@@ -5,6 +5,8 @@ import Review from "./components/review";
 const App = () => {
   const [image, setImage] = useState(null);
   const [review , setReview] = useState(false)
+  const [take , setTake] = useState(true)
+
   const [extractedData, setExtractedData] = useState(null);
   const inputRef = useRef(null);
   const fileRef = useRef(null)
@@ -34,16 +36,18 @@ const App = () => {
     console.log(extractedData); // confirm the shape before wiring further
 
     setReview(true)
+    setTake(false)
   };
 
   return (
     <div className="w-96 mx-auto py-10 text-center space-y-6">
-      <div>
+   {take &&<div>
+     <div>
         <h2 className="text-3xl font-bold text-black">Upload Receipt</h2>
         <p className="text-gray-500 mt-2">Take a photo or upload an image of your receipt.</p>
         <p className="text-gray-500">We will extract it for you.</p>
       </div>
-
+  
       {!image && (
         <label className="upload-card block">
           <input
@@ -67,8 +71,7 @@ const App = () => {
           </div>
         </label>
       )}
-
-      {image && (
+       {image && (
         <div className="space-y-3">
           <img src={image} alt="Captured receipt" className="w-80 mx-auto rounded-2xl shadow" />
           <input
@@ -89,9 +92,15 @@ const App = () => {
       )}
 
       <button onClick={handleGeneration}>Digitize</button>
+   </div>
+   
+   
+   }
+
+     
 
 
-      {review &&(<Review data={extractedData} />)}
+      {review &&(<Review data={extractedData}  setTake ={setTake} setReview = {setReview}/>)}
     </div>
   );
 };

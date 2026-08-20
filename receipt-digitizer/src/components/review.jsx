@@ -73,10 +73,7 @@ const Review = ({ data, image ,setTake, setReview}) => {
           <span className="text-sm font-semibold text-gray-700">Receipt Image</span>
         </div>
         <img src={image} alt="Receipt" className="w-full rounded-xl object-cover" />
-        <div className="flex items-center gap-1 text-green-600 font-medium text-xs mt-3">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          Extracted by AI
-        </div>
+       
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 space-y-4">
@@ -128,7 +125,7 @@ const Review = ({ data, image ,setTake, setReview}) => {
       </div>
 
       <div className="space-y-3">
-        <button className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2" onClick={handleConfirm}>
+        <button className="w-full cursor-pointer bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2" onClick={handleConfirm}>
           <ShieldCheck className="w-4 h-4" />
           Confirm & Save Expense
         </button>

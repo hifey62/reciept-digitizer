@@ -91,7 +91,12 @@ const App = () => {
         </div>
       )}
 
-      <button onClick={handleGeneration}>Digitize</button>
+      <button
+        onClick={handleGeneration}
+        className="w-36 mx-auto mt-2 rounded-xl bg-green-600 cursor-pointer px-6 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+      >
+        Digitize
+      </button>
    </div>
    
    

@@ -12,8 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^13.0.2",
     "cors": "^2.8.6",
@@ -28,6 +29,8 @@
     "@prisma/engines@7.9.1": true,
     "better-sqlite3@13.0.2": true,
     "prisma@7.9.1": true,
-    "better-sqlite3@12.11.1": true
+    "better-sqlite3@12.11.1": true,
+    "bcrypt@6.0.0": true,
+    "node-gyp-build@4.8.4": true
   }
 }

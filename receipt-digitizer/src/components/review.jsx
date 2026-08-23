@@ -1,4 +1,4 @@
-import { Store, StickyNote, Calendar, ChevronDown, ShieldCheck, Pencil, X } from "lucide-react";
+import { Store, StickyNote, Calendar, ChevronDown, ShieldCheck, Pencil, X , Clock} from "lucide-react";
 import { useState } from "react";
 
 const Review = ({ data, image ,setTake, setReview}) => {
@@ -29,19 +29,30 @@ const Review = ({ data, image ,setTake, setReview}) => {
     items,
     notes,
   };
+    const token = localStorage.getItem("token");
 
   try {
-    const result = await fetch(`http://localhost:5003/receipts/confirm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+   const response = await fetch(`${import.meta.env.VITE_API_URL}/receipts/confirm`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      vendor,
+      amount: Number(amount),
+      date,
+      category,
+      items,
+      notes,
+    }),
+  });
 
-    if (!result.ok) {
+    if (!response.ok) {
       throw new Error("Save failed");
     }
 
-    const data = await result.json();
+    const data = await response.json();
     console.log("Saved:", data);
     setSuccess(true);
     // next: navigate back to upload screen, or show a success state
@@ -135,11 +146,11 @@ const Review = ({ data, image ,setTake, setReview}) => {
       </div>
       
       {success && (
-        <div className="success-message text-green-600 text-sm font-medium mt-4">
-          <ShieldCheck className="w-4 h-4 inline-block mr-1" />
-          Receipt saved successfully!
-        </div>
-      )}
+  <div className="success-message text-amber-600 text-sm font-medium mt-4">
+    <Clock className="w-4 h-4 inline-block mr-1" />
+    Receipt submitted — waiting for admin approval
+  </div>
+)}
     </div>
   );
 };

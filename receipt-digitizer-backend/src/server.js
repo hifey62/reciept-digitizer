@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import multer from 'multer'
 import receiptRoutes from './routes/receipt.js'
+import authRouter from "./routes/auth.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -13,7 +14,7 @@ app.get('/',(req,res)=>{
     res.send('Dont you dare giveup')
 })
 
-
+app.use(authRouter);
 app.use(receiptRoutes);
 
 app.listen(PORT , ()=>{

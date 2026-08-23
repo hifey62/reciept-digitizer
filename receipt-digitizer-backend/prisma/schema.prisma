@@ -8,18 +8,29 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 
 model Receipt {
-  id       Int      @id @default(autoincrement())
-  vendor   String
-  category String
-  date     DateTime
-  amount   Float
-  userId   Int
-  items    Item[]
+  id         Int      @id @default(autoincrement())
+  vendor     String
+  category   String
+  date       DateTime
+  amount     Float
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  status     String   @default("pending")
+  approvedBy Int?
+  items      Item[]
+}
+
+model User {
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  password String
+  role     String
+  receipts Receipt[]
 }
 
 model Item {
@@ -29,3 +40,4 @@ model Item {
   receiptId Int
   receipt   Receipt @relation(fields: [receiptId], references: [id])
 }
+

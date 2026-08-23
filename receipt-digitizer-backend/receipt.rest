@@ -29,3 +29,77 @@ Content-Type: application/json
   ],
   "notes": "route test"
 }
+
+### create admin 
+POST http://localhost:5003/auth/signup
+Content-Type: application/json
+
+{
+  "email": "admin@church.com",
+  "password": "testpassword123",
+  "role": "admin"
+}
+
+### login
+POST http://localhost:5003/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@church.com",
+  "password": "testpassword123"
+  
+}
+
+###
+
+POST http://localhost:5003/receipts/confirm
+Content-Type: application/json
+
+{
+  "vendor": "Test Vendor",
+  "amount": 154.06,
+  "date": "2026-08-23",
+  "category": "Repair",
+  "userId": 1,
+  "items": [
+    { "name": "Test Item", "price": 100 }
+  ],
+  "notes": "approval flow test"
+}
+### approve receipt
+POST http://localhost:5003/receipts/12/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NzUyMzE2NSwiZXhwIjoxNzg4MTI3OTY1fQ.xh3PsgDoTIZ6YdzyVLSwDNImScdQ9JCkVgpTX-RokVI
+
+###
+
+POST http://localhost:5003/receipts/confirm
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NzUyNDMxMywiZXhwIjoxNzg4MTI5MTEzfQ.xWFMcXn4dl6VmaHff0mn7erevqIq60Ff5Fnudpgam0Q
+
+{
+  "vendor": "Test Vendor 2",
+  "amount": 200,
+  "date": "2026-08-23",
+  "category": "Supplies",
+  "items": [
+    { "name": "Test Item 2", "price": 200 }
+  ],
+  "notes": "auth-protected submission test"
+}
+
+###
+
+POST http://localhost:5003/receipts/confirm
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4NzUyNDMxMywiZXhwIjoxNzg4MTI5MTEzfQ.xWFMcXn4dl6VmaHff0mn7erevqIq60Ff5Fnudpgam0Q
+
+{
+  "vendor": "Test Vendor 2",
+  "amount": 200,
+  "date": "2026-08-23",
+  "category": "Supplies",
+  "items": [
+    { "name": "Test Item 2", "price": 200 }
+  ],
+  "notes": "auth-protected submission test"
+}

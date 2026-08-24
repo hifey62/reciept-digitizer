@@ -5,23 +5,22 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("worker");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
- const [isLoading, setIsLoading] = useState(false);
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
-const handleSignup = async (e) => {
-  e.preventDefault();
-  setError("");
-  setIsLoading(true);
-
-  try {
-    // ...existing fetch logic
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong");
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      // ...existing fetch logic
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="max-w-sm mx-auto py-16 px-4">
       <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
@@ -55,9 +54,10 @@ const handleSignup = async (e) => {
 
         <button
           type="submit"
-          className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl"
+          disabled={isLoading}
+          className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign Up
+          {isLoading ? "Creating account..." : "Sign Up"}
         </button>
       </form>
 

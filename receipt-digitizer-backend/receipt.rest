@@ -103,3 +103,15 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvb
   ],
   "notes": "auth-protected submission test"
 }
+
+
+###
+
+POST https://reciept-digitizer-production.up.railway.app/auth/signup
+Content-Type: application/json
+
+{
+  "email": "test@church.com",
+  "password": "testpassword123",
+  "role": "worker"
+}

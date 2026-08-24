@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node  --env-file=.env --watch ./src/server.js",
     "start": "node ./src/server.js",
-    "build": "prisma generate",
-    "postinstall": "prisma generate"
+    "build": "npx prisma generate",
+    "postinstall": "npx prisma generate"
   },
   "keywords": [],
   "author": "",

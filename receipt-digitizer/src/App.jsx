@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Camera } from "lucide-react";
 import Review from "./components/review";
 import Login from "./components/Login";
-import Signup from "./components/Signup";
+import Signup from "./components/SignUp";
 import AdminDashboard from "./components/AdminDashboard";
 
 
@@ -20,7 +20,7 @@ const App = () => {
 
   const [authView, setAuthView] = useState("login"); // "login" or "signup"
 
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
   // On first load, check if a token already exists (user refreshed the page)
   useEffect(() => {
@@ -71,7 +71,7 @@ const App = () => {
 
     const formData = new FormData();
     formData.append("receipt", fileRef.current)
-    let result = await fetch('http://localhost:5003/receipts', {
+    let result = await fetch(`${API_URL}/receipts`, {
       method: "POST",
       body: formData
     })

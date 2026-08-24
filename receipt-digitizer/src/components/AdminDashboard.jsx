@@ -5,6 +5,8 @@ const AdminDashboard = ({ onLogout }) => {
     const [receipts, setReceipts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedReceipt, setSelectedReceipt] = useState(null);
+    const [approvingId, setApprovingId] = useState(null);
+    const [approveError, setApproveError] = useState("");
 
     useEffect(() => {
         fetchPending();
@@ -21,13 +23,34 @@ const AdminDashboard = ({ onLogout }) => {
     };
 
     const handleApprove = async (id) => {
+        setApprovingId(id);
+        setApproveError("");
+
         const token = localStorage.getItem("token");
-        await fetch(`${import.meta.env.VITE_API_URL}/receipts/${id}/approve`, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        setReceipts((prev) => prev.filter((r) => r.id !== id));
-        setSelectedReceipt(null); // close detail view if it was open
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/receipts/${id}/approve`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.status === 401) {
+                onSessionExpired();
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error("Approval failed");
+            }
+
+            setReceipts((prev) => prev.filter((r) => r.id !== id));
+            setSelectedReceipt(null);
+        } catch (err) {
+            console.error(err);
+            setApproveError("Couldn't approve this receipt. Try again.");
+        } finally {
+            setApprovingId(null);
+        }
     };
 
     if (loading) return <p className="text-center py-10">Loading...</p>;
@@ -70,11 +93,16 @@ const AdminDashboard = ({ onLogout }) => {
 
                     <button
                         onClick={() => handleApprove(selectedReceipt.id)}
-                        className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-6"
+                        disabled={approvingId === selectedReceipt.id}
+                        className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <ShieldCheck className="w-4 h-4" />
-                        Approve
+                        {approvingId === selectedReceipt.id ? "Approving..." : "Approve"}
                     </button>
+
+                    {approveError && (
+                        <p className="text-red-500 text-sm mt-2 text-center">{approveError}</p>
+                    )}
                 </div>
             </div>
         );

@@ -10,6 +10,9 @@ const App = () => {
   const [image, setImage] = useState(null);
   const [review, setReview] = useState(false)
   const [take, setTake] = useState(true)
+  
+  const [isDigitizing, setIsDigitizing] = useState(false);
+  const [digitizeError, setDigitizeError] = useState("");
 
   const [extractedData, setExtractedData] = useState(null);
   const inputRef = useRef(null);
@@ -20,7 +23,7 @@ const App = () => {
 
   const [authView, setAuthView] = useState("login"); // "login" or "signup"
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
   // On first load, check if a token already exists (user refreshed the page)
   useEffect(() => {
@@ -53,7 +56,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
   }
 
   if (role === "admin") {
-    return <AdminDashboard onLogout={handleLogout} />;
+    return <AdminDashboard onLogout={handleLogout} onSessionExpired={handleLogout} />;
   }
 
 
@@ -66,24 +69,34 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
       setImage(URL.createObjectURL(file));
     }
   };
+const handleGeneration = async () => {
+  setIsDigitizing(true);
+  setDigitizeError("");
 
-  const handleGeneration = async () => {
-
+  try {
     const formData = new FormData();
-    formData.append("receipt", fileRef.current)
-    let result = await fetch(`${API_URL}/receipts`, {
+    formData.append("receipt", fileRef.current);
+
+    const result = await fetch(`${import.meta.env.VITE_API_URL}/receipts`, {
       method: "POST",
-      body: formData
-    })
+      body: formData,
+    });
 
-    const extractedData = await result.json();
-    setExtractedData(extractedData);
-    console.log(extractedData); // confirm the shape before wiring further
+    if (!result.ok) {
+      throw new Error("Extraction failed");
+    }
 
-    setReview(true)
-    setTake(false)
-  };
-
+    const data = await result.json();
+    setExtractedData(data);
+    setReview(true);
+    setTake(false);
+  } catch (err) {
+    console.error(err);
+    setDigitizeError("Couldn't read this receipt. Try a clearer photo, or try again.");
+  } finally {
+    setIsDigitizing(false);
+  }
+};
   return (
     <div className="w-96 mx-auto py-10 text-center space-y-6">
       <button
@@ -145,10 +158,15 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
         <button
           onClick={handleGeneration}
-          className="w-36 mx-auto mt-2 rounded-xl bg-green-600 cursor-pointer px-6 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-green-700 hover:shadow-lg active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          disabled={isDigitizing}
+          className="w-1/2 bg-green-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
         >
-          Digitize
+          {isDigitizing ? "Reading receipt..." : "Digitize"}
         </button>
+
+        {digitizeError && (
+          <p className="text-red-500 text-sm mt-2">{digitizeError}</p>
+        )}
       </div>
 
 
@@ -157,7 +175,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
 
 
-      {review && (<Review data={extractedData} setTake={setTake} setReview={setReview} />)}
+      {review && (<Review data={extractedData} setTake={setTake} setReview={setReview} onSessionExpired={handleLogout} />)}
     </div>
   );
 };

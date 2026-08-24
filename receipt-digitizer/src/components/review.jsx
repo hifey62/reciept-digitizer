@@ -1,7 +1,7 @@
-import { Store, StickyNote, Calendar, ChevronDown, ShieldCheck, Pencil, X , Clock} from "lucide-react";
-import { useState } from "react";
+import { Store, StickyNote, Calendar, ChevronDown, ShieldCheck, Pencil, X, Clock } from "lucide-react";
+import { useState,useEffect } from "react";
 
-const Review = ({ data, image ,setTake, setReview}) => {
+const Review = ({ data, image, setTake, setReview }) => {
   // Local editable copies — so the user can correct AI mistakes before saving
   const [vendor, setVendor] = useState(data.vendor);
   const [amount, setAmount] = useState(data.amount);
@@ -10,61 +10,79 @@ const Review = ({ data, image ,setTake, setReview}) => {
   const [items, setItems] = useState(data.items);
   const [notes, setNotes] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const removeItem = (index) => {
     setItems(items.filter((_, i) => i !== index));
   };
+  const updateItem = (index, updatedItem) => {
+    setItems((prev) => prev.map((item, i) => (i === index ? updatedItem : item)));
+  };
 
-  function handleRender(){
+  useEffect(() => {
+    const total = items.reduce((sum, item) => sum + item.price, 0);
+    setAmount(total);
+  }, [items]);
+
+  function handleRender() {
     setTake(true)
     setReview(false)
   }
 
- const handleConfirm = async () => {
-  const payload = {
-    vendor,
-    amount: Number(amount), // the input is text, but the backend expects a number
-    date,
-    category,
-    items,
-    notes,
-  };
-    const token = localStorage.getItem("token");
-
-  try {
-   const response = await fetch(`${import.meta.env.VITE_API_URL}/receipts/confirm`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
-    body: JSON.stringify({
+  const handleConfirm = async () => {
+    setIsSaving(true);
+    setSaveError("");
+    const payload = {
       vendor,
-      amount: Number(amount),
+      amount: Number(amount), // the input is text, but the backend expects a number
       date,
       category,
       items,
       notes,
-    }),
-  });
+    };
+    const token = localStorage.getItem("token");
 
-    if (!response.ok) {
-      throw new Error("Save failed");
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/receipts/confirm`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          vendor,
+          amount: Number(amount),
+          date,
+          category,
+          items,
+          notes,
+        }),
+      });
+
+      if (response.status === 401) {
+        onSessionExpired();
+        return;
+      }
+
+
+      if (!response.ok) {
+        throw new Error("Save failed");
+      }
+
+      const data = await response.json();
+      setSuccess(true);
+    } catch (err) {
+      console.error(err);
+      setSaveError("Couldn't save this receipt. Check your connection and try again.");
+    } finally {
+      setIsSaving(false);
     }
-
-    const data = await response.json();
-    console.log("Saved:", data);
-    setSuccess(true);
-    // next: navigate back to upload screen, or show a success state
-  } catch (err) {
-    console.error(err);
-    // next: show an error message to the user
-  }
-};
+  };
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <button className="text-gray-500" onClick={ handleRender}>
+        <button className="text-gray-500" onClick={handleRender}>
           <i className="fa-solid fa-arrow-left" />
         </button>
         <div className="text-center">
@@ -84,14 +102,19 @@ const Review = ({ data, image ,setTake, setReview}) => {
           <span className="text-sm font-semibold text-gray-700">Receipt Image</span>
         </div>
         <img src={image} alt="Receipt" className="w-full rounded-xl object-cover" />
-       
+
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-4 space-y-4">
         <h3 className="text-sm font-semibold text-gray-700">Extracted Details</h3>
 
         <Field icon={<Store className="w-4 h-4" />} label="Vendor / Merchant" value={vendor} onChange={setVendor} />
-        <Field icon={<i className="fa-solid fa-naira-sign text-sm" />} label="Amount" value={amount} onChange={setAmount} />
+        <div>
+          <label className="text-xs font-medium text-gray-500 mb-1 block">Total Amount</label>
+          <div className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 px-3 text-sm text-gray-700">
+            ₦{amount.toFixed(2)}
+          </div>
+        </div>
         <Field icon={<Calendar className="w-4 h-4" />} label="Date" value={date} onChange={setDate} />
 
         <div>
@@ -130,27 +153,40 @@ const Review = ({ data, image ,setTake, setReview}) => {
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Items</h3>
         <div className="space-y-2">
           {items.map((item, i) => (
-            <ItemRow key={i} name={item.name} price={item.price} onRemove={() => removeItem(i)} />
+            <ItemRow
+              key={i}
+              item={item}
+              onUpdate={(updatedItem) => updateItem(i, updatedItem)}
+              onRemove={() => removeItem(i)}
+            />
           ))}
         </div>
       </div>
 
       <div className="space-y-3">
-        <button className="w-full cursor-pointer bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2" onClick={handleConfirm}>
+        <button
+          onClick={handleConfirm}
+          disabled={isSaving}
+          className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <ShieldCheck className="w-4 h-4" />
-          Confirm & Save Expense
+          {isSaving ? "Saving..." : "Confirm & Save Expense"}
         </button>
+
+        {saveError && (
+          <p className="text-red-500 text-sm mt-2 text-center">{saveError}</p>
+        )}
         <button className="w-full border border-gray-200 text-gray-700 font-medium py-3 rounded-xl">
           Cancel
         </button>
       </div>
-      
+
       {success && (
-  <div className="success-message text-amber-600 text-sm font-medium mt-4">
-    <Clock className="w-4 h-4 inline-block mr-1" />
-    Receipt submitted — waiting for admin approval
-  </div>
-)}
+        <div className="success-message text-amber-600 text-sm font-medium mt-4">
+          <Clock className="w-4 h-4 inline-block mr-1" />
+          Receipt submitted — waiting for admin approval
+        </div>
+      )}
     </div>
   );
 };
@@ -171,15 +207,26 @@ const Field = ({ icon, label, value, onChange }) => (
   </div>
 );
 
-const ItemRow = ({ name, price, onRemove }) => (
-  <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
-    <span className="text-sm text-gray-700">{name}</span>
-    <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-gray-800">₦{price}</span>
-      <button onClick={onRemove} className="text-gray-300 hover:text-red-500">
-        <X className="w-3.5 h-3.5" />
-      </button>
+const ItemRow = ({ item, onUpdate, onRemove }) => (
+  <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+    <input
+      type="text"
+      value={item.name}
+      onChange={(e) => onUpdate({ ...item, name: e.target.value })}
+      className="flex-1 bg-transparent text-sm text-gray-700 outline-none border-b border-transparent focus:border-green-400"
+    />
+    <div className="flex items-center gap-1">
+      <span className="text-sm text-gray-500">₦</span>
+      <input
+        type="number"
+        value={item.price}
+        onChange={(e) => onUpdate({ ...item, price: Number(e.target.value) })}
+        className="w-20 bg-transparent text-sm font-medium text-gray-800 outline-none border-b border-transparent focus:border-green-400"
+      />
     </div>
+    <button onClick={onRemove} className="text-gray-300 hover:text-red-500">
+      <X className="w-3.5 h-3.5" />
+    </button>
   </div>
 );
 

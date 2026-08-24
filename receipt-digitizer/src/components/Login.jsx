@@ -4,10 +4,12 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
+        setIsLoading(true);
 
         try {
             const result = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
@@ -16,21 +18,21 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
                 body: JSON.stringify({ email, password }),
             });
 
+            const data = await result.json();
+
             if (!result.ok) {
-                const data = await result.json();
                 setError(data.error || "Login failed");
                 return;
             }
 
-            const data = await result.json();
-            // Save the token so future requests can use it
             localStorage.setItem("token", data.token);
             localStorage.setItem("role", data.role);
-
             onLoginSuccess(data.role);
         } catch (err) {
             console.error(err);
-            setError("Something went wrong");
+            setError("Something went wrong. Check your connection and try again.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -58,9 +60,10 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
 
                 <button
                     type="submit"
-                    className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl"
+                    disabled={isLoading}
+                    className="w-full bg-green-600 text-white font-semibold py-3 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Sign In
+                    {isLoading ? "Signing in..." : "Sign In"}
                 </button>
 
                 <p className="text-center text-sm text-gray-500 mt-4">

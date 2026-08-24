@@ -7,20 +7,33 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setError("");
+  setIsLoading(true);
 
-    try {
-      // ...existing fetch logic
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong");
-    } finally {
-      setIsLoading(false);
+  try {
+    const result = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, role }),
+    });
+
+    const data = await result.json();
+
+    if (!result.ok) {
+      setError(data.error || "Signup failed");
+      return;
     }
-  };
+
+    onSignupSuccess();
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong");
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <div className="max-w-sm mx-auto py-16 px-4">
       <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
